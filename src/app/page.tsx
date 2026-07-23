@@ -10,12 +10,13 @@ import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 import { Footer } from "@/components/sections/Footer";
 import { CookieConsent } from "@/components/ui/CookieConsent";
+import { StickyMobileCTA } from "@/components/ui/StickyMobileCTA";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <main id="main-content">
+      <main id="main-content" className="pb-20 sm:pb-0">
         <Hero />
         <Problem />
         <Author />
@@ -28,6 +29,7 @@ export default function Home() {
       </main>
       <Footer />
       <CookieConsent />
+      <StickyMobileCTA />
     </>
   );
 }
