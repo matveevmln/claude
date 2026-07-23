@@ -1,0 +1,452 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  AFFILIATE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProviderName {
+  LAVA
+  YOOKASSA
+  STRIPE
+  PAYPAL
+}
+
+// ---------- Identity ----------
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String?
+  passwordHash     String?
+  role             Role      @default(CUSTOMER)
+  emailVerified    DateTime?
+  telegramUsername String?
+  telegramChatId   String?
+  tags             String[]  @default([])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  orders                  Order[]
+  enrollments             Enrollment[]
+  progress                LessonProgress[]
+  notifications           Notification[]
+  affiliate               AffiliatePartner?
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  certificates            Certificate[]
+  notes                   CustomerNote[]        @relation("CustomerNotes")
+  notesAuthored           CustomerNote[]        @relation("NoteAuthor")
+  loginEvents             LoginEvent[]
+  auditLogsAsAdmin        AdminAuditLog[]        @relation("AuditAdmin")
+  auditLogsAsTarget       AdminAuditLog[]        @relation("AuditTarget")
+
+  @@index([role])
+}
+
+/// Free-text CRM notes an admin leaves on a customer record.
+model CustomerNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("CustomerNotes", fields: [userId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("NoteAuthor", fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// "Login history" requirement — one row per successful sign-in.
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Accountability trail for privileged admin actions (grant access, impersonate, refund, etc).
+model AdminAuditLog {
+  id           String   @id @default(cuid())
+  adminId      String
+  admin        User     @relation("AuditAdmin", fields: [adminId], references: [id])
+  action       String
+  targetUserId String?
+  targetUser   User?    @relation("AuditTarget", fields: [targetUserId], references: [id])
+  payload      Json?
+  createdAt    DateTime @default(now())
+
+  @@index([adminId])
+  @@index([targetUserId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Catalog (CMS-style: add new courses without code changes) ----------
+
+/// A sellable thing — course, ebook, template, membership, bundle. New
+/// products/brands are created here, never by adding code: see admin
+/// `/admin/products`.
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  /// "course" | "ebook" | "template" | "membership" | "bundle" — free-form,
+  /// used only for admin UI grouping, not enforced at the DB level.
+  type        String   @default("course")
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tariffs Tariff[]
+  modules Module[]
+}
+
+model Tariff {
+  id             String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  slug           String
+  name           String
+  price          Int
+  oldPrice       Int?
+  badge          String?
+  features       String[]
+  providerOfferId String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  moduleAccess ModuleTariffAccess[]
+  orders       Order[]
+  enrollments  Enrollment[]
+  certificates Certificate[]
+
+  @@unique([productId, slug])
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  index     Int
+  title     String
+  subtitle  String?
+  createdAt DateTime @default(now())
+
+  lessons      Lesson[]
+  tariffAccess ModuleTariffAccess[]
+
+  @@unique([productId, index])
+}
+
+/// Which tariffs unlock which modules — lets Base/Standard/VIP see different content sets.
+model ModuleTariffAccess {
+  id       String @id @default(cuid())
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  tariffId String
+  tariff   Tariff @relation(fields: [tariffId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleId, tariffId])
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  moduleId    String
+  module      Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  index       Int
+  title       String
+  summary     String?
+  videoUrl    String?
+  durationSec Int?
+  pdfUrl      String?
+  createdAt   DateTime @default(now())
+
+  progress  LessonProgress[]
+  resources LessonResource[]
+  comments  Comment[]
+  quiz      Quiz?
+  assignment Assignment?
+
+  @@unique([moduleId, index])
+}
+
+// ---------- Commerce ----------
+
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  percentOff     Int?
+  amountOff      Int?
+  active         Boolean   @default(true)
+  maxRedemptions Int?
+  timesRedeemed  Int       @default(0)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  orders Order[]
+}
+
+model AffiliatePartner {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code              String   @unique
+  commissionPercent Int      @default(20)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  orders   Order[]
+  payouts  AffiliatePayout[]
+}
+
+model AffiliatePayout {
+  id          String   @id @default(cuid())
+  affiliateId String
+  affiliate   AffiliatePartner @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount      Int
+  periodStart DateTime
+  periodEnd   DateTime
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id              String              @id @default(cuid())
+  userId          String?
+  user            User?               @relation(fields: [userId], references: [id])
+  email           String
+  name            String?
+  tariffId        String
+  tariff          Tariff              @relation(fields: [tariffId], references: [id])
+  amount          Int
+  currency        String              @default("RUB")
+  status          OrderStatus         @default(PENDING)
+  provider        PaymentProviderName
+  providerOrderId String?             @unique
+  couponId        String?
+  coupon          Coupon?             @relation(fields: [couponId], references: [id])
+  affiliateId     String?
+  affiliate       AffiliatePartner?   @relation(fields: [affiliateId], references: [id])
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmContent      String?
+  utmTerm         String?
+  createdAt       DateTime            @default(now())
+  paidAt          DateTime?
+
+  events     OrderEvent[]
+  enrollment Enrollment?
+  refunds    Refund[]
+
+  @@index([email])
+  @@index([status])
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount      Int
+  reason      String?
+  processedBy String
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+}
+
+/// Append-only audit log — "log everything" requirement.
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type      String
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tariffId  String
+  tariff    Tariff   @relation(fields: [tariffId], references: [id])
+  orderId   String?  @unique
+  order     Order?   @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tariffId])
+}
+
+model LessonProgress {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId     String
+  lesson       Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed    Boolean   @default(false)
+  completedAt  DateTime?
+  positionSec  Int       @default(0)
+  lastViewedAt DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId, lastViewedAt])
+}
+
+/// Downloadable resource attached to a lesson (worksheet, extra PDF, template).
+model LessonResource {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title    String
+  url      String
+  kind     String @default("pdf")
+}
+
+/// Simple flat lesson comments — parentId enables one level of replies.
+model Comment {
+  id        String    @id @default(cuid())
+  lessonId  String
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  userId    String
+  body      String
+  parentId  String?
+  createdAt DateTime  @default(now())
+
+  @@index([lessonId])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  publishedAt DateTime @default(now())
+  createdBy   String
+}
+
+// ---------- Quiz / Assignment groundwork ----------
+// Schema only for now — no grading/authoring UI yet. Safe to build on top of.
+
+model Quiz {
+  id       String         @id @default(cuid())
+  lessonId String         @unique
+  lesson   Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title    String
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+}
+
+model QuizQuestion {
+  id           String @id @default(cuid())
+  quizId       String
+  quiz         Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question     String
+  options      Json
+  correctIndex Int
+  index        Int    @default(0)
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String
+  score     Int
+  answers   Json
+  createdAt DateTime @default(now())
+
+  @@index([quizId, userId])
+}
+
+model Assignment {
+  id           String                 @id @default(cuid())
+  lessonId     String                 @unique
+  lesson       Lesson                 @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title        String
+  instructions String
+  submissions  AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  content      String?
+  fileUrl      String?
+  status       String     @default("submitted")
+  feedback     String?
+  submittedAt  DateTime   @default(now())
+
+  @@index([assignmentId, userId])
+}
+
+model Certificate {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tariffId String
+  tariff   Tariff   @relation(fields: [tariffId], references: [id])
+  serial   String   @unique
+  issuedAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
