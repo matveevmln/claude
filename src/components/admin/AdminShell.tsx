@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/customers", label: "Клиенты" },
   { href: "/admin/products", label: "Продукты" },
   { href: "/admin/announcements", label: "Объявления" },
+  { href: "/admin/affiliates", label: "Партнёры" },
   { href: "/admin/coupons", label: "Купоны" },
   { href: "/admin/access", label: "Доступ вручную" },
 ];

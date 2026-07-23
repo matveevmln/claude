@@ -16,12 +16,17 @@ const navItems = [
 export function AccountShell({
   children,
   impersonating,
+  isAffiliate = false,
 }: {
   children: React.ReactNode;
   impersonating?: { name: string | null; email: string } | null;
+  isAffiliate?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const items = isAffiliate
+    ? [...navItems, { href: "/account/affiliate", label: "Партнёрка", icon: "🔗" }]
+    : navItems;
 
   async function stopImpersonating() {
     await fetch("/api/admin/impersonate/stop", { method: "POST" });
@@ -64,7 +69,7 @@ export function AccountShell({
           aria-label="Навигация личного кабинета"
           className="hidden w-52 shrink-0 flex-col gap-1 lg:flex"
         >
-          {navItems.map((item) => {
+          {items.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -88,7 +93,7 @@ export function AccountShell({
         aria-label="Навигация личного кабинета"
         className="fixed inset-x-0 bottom-0 z-30 flex border-t border-beige-line bg-white/95 backdrop-blur-md lg:hidden"
       >
-        {navItems.map((item) => {
+        {items.map((item) => {
           const active = pathname === item.href;
           return (
             <Link

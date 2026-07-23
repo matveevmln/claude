@@ -14,6 +14,25 @@ function getUtm(): Record<string, string> {
   return utm;
 }
 
+const REF_STORAGE_KEY = "dd_ref_code";
+const REF_ATTRIBUTION_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+function getAffiliateCode(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const fromUrl = new URLSearchParams(window.location.search).get("ref");
+  if (fromUrl) return fromUrl;
+
+  try {
+    const stored = JSON.parse(localStorage.getItem(REF_STORAGE_KEY) ?? "null");
+    if (stored?.code && Date.now() - stored.savedAt < REF_ATTRIBUTION_WINDOW_MS) {
+      return stored.code as string;
+    }
+  } catch {
+    // ignore malformed storage
+  }
+  return undefined;
+}
+
 export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose: () => void }) {
   const tariff = tariffs.find((t) => t.id === tariffId);
   const [name, setName] = useState("");
@@ -22,6 +41,15 @@ export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose:
   const [couponCode, setCouponCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Auto-apply a coupon shared via a landing-page link, e.g. /?coupon=SUMMER20
+    const fromUrl = new URLSearchParams(window.location.search).get("coupon");
+    if (fromUrl) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCouponCode(fromUrl.toUpperCase());
+    }
+  }, []);
 
   useEffect(() => {
     function onKeydown(e: KeyboardEvent) {
@@ -50,6 +78,7 @@ export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose:
           email,
           telegramUsername: telegramUsername || undefined,
           couponCode: couponCode || undefined,
+          affiliateCode: getAffiliateCode(),
           utm: getUtm(),
         }),
       });

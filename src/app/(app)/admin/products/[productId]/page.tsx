@@ -15,7 +15,10 @@ export default async function AdminProductDetailPage(ctx: PageProps<"/admin/prod
       tariffs: { orderBy: { price: "asc" } },
       modules: {
         orderBy: { index: "asc" },
-        include: { lessons: { orderBy: { index: "asc" } }, tariffAccess: true },
+        include: {
+          lessons: { orderBy: { index: "asc" }, include: { resources: true } },
+          tariffAccess: true,
+        },
       },
     },
   });

@@ -15,6 +15,7 @@ const checkoutSchema = z.object({
   email: z.string().email("Некорректный email"),
   telegramUsername: z.string().max(100).optional(),
   couponCode: z.string().max(40).optional(),
+  affiliateCode: z.string().max(40).optional(),
   utm: z.record(z.string(), z.string().optional()).optional(),
 });
 
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Bad request" }, { status: 400 });
   }
 
-  const { tariffId, productSlug, name, email, telegramUsername, couponCode, utm } = parsed.data;
+  const { tariffId, productSlug, name, email, telegramUsername, couponCode, affiliateCode, utm } = parsed.data;
 
   // Tariff slugs are only unique per-product (e.g. two products can each
   // have a "standard" tariff) — always scope the lookup by product.
@@ -75,6 +76,10 @@ export async function POST(request: NextRequest) {
 
   const providerName = PROVIDER_ENUM[process.env.PAYMENT_PROVIDER ?? "lava"] ?? PaymentProviderName.LAVA;
 
+  const affiliateId = affiliateCode
+    ? (await db.affiliatePartner.findUnique({ where: { code: affiliateCode.trim().toUpperCase() }, select: { id: true } }))?.id
+    : undefined;
+
   const order = await db.order.create({
     data: {
       email,
@@ -84,6 +89,7 @@ export async function POST(request: NextRequest) {
       currency: site.currency,
       provider: providerName,
       couponId,
+      affiliateId,
       utmSource: utm?.utm_source,
       utmMedium: utm?.utm_medium,
       utmCampaign: utm?.utm_campaign,

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import { PaymentModal } from "@/components/ui/PaymentModal";
 
 type CheckoutContextValue = {
@@ -15,8 +15,20 @@ export function useCheckout() {
   return ctx;
 }
 
+const REF_STORAGE_KEY = "dd_ref_code";
+
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const [tariffId, setTariffId] = useState<string | null>(null);
+
+  // First-touch affiliate attribution: persist ?ref=CODE beyond the landing
+  // page visit, so the code still applies if checkout happens later in the
+  // session (e.g. after browsing, not immediately on arrival).
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) {
+      localStorage.setItem(REF_STORAGE_KEY, JSON.stringify({ code: ref, savedAt: Date.now() }));
+    }
+  }, []);
 
   const openCheckout = useCallback((id: string) => setTariffId(id), []);
   const close = useCallback(() => setTariffId(null), []);
