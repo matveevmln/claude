@@ -11,8 +11,8 @@ export default async function UpgradePage() {
     where: { userId },
     include: { tariff: true },
   });
-  const ownedSlugs = new Set(enrollments.map((e) => e.tariff.slug));
-  const available = tariffs.filter((t) => !ownedSlugs.has(t.id));
+  const ownedMaxPrice = Math.max(0, ...enrollments.map((e) => e.tariff.price));
+  const available = tariffs.filter((t) => t.price > ownedMaxPrice);
 
   return (
     <div className="flex flex-col gap-6">
