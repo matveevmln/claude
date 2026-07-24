@@ -6,6 +6,15 @@ import { tariffs, type Tariff } from "@/lib/content/product";
 import { Button } from "./Button";
 import { track } from "@/lib/analytics";
 
+export function usePaymentModal() {
+  const [openTariffId, setOpenTariffId] = useState<Tariff["id"] | null>(null);
+  return {
+    openTariffId,
+    open: (id: Tariff["id"]) => setOpenTariffId(id),
+    close: () => setOpenTariffId(null),
+  };
+}
+
 function getUtm(): Record<string, string> {
   if (typeof window === "undefined") return {};
   const params = new URLSearchParams(window.location.search);
