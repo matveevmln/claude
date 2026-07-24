@@ -1,28 +1,37 @@
 "use client";
 
 import { Container } from "@/components/ui/Container";
+import { Button } from "@/components/ui/Button";
+import { Countdown } from "@/components/ui/Countdown";
+import { Reveal } from "@/components/ui/Reveal";
 import { useCheckout } from "@/components/CheckoutProvider";
 
 export function FinalCTA() {
-  const { openCheckout } = useCheckout();
+  const openCheckout = useCheckout();
 
   return (
     <section className="py-16 sm:py-24">
       <Container>
-        <div className="rounded-[2.5rem] bg-gradient-to-br from-choco to-[#3d2530] p-10 text-center sm:p-16">
-          <h2 className="font-display text-2xl font-extrabold text-cream sm:text-3xl">
-            Начните печь красиво уже на этой неделе
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-cream/70">
-            500+ учениц уже прошли путь от «кривого бисквита» до тортов, за которые не стыдно просить деньги.
-          </p>
-          <button
-            onClick={() => openCheckout("standard")}
-            className="mt-7 inline-flex rounded-full bg-gradient-to-r from-berry-deep to-berry-strong px-8 py-4 text-base font-bold text-white transition hover:-translate-y-0.5"
-          >
-            Выбрать тариф →
-          </button>
-        </div>
+        <Reveal>
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-choco px-6 py-14 text-center sm:px-12 sm:py-20">
+            <div className="pointer-events-none absolute -top-16 right-[-5%] h-64 w-64 rounded-full bg-berry/25 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-[-4rem] left-[-5%] h-64 w-64 rounded-full bg-gold-light/15 blur-3xl" />
+
+            <h2 className="font-display text-3xl font-bold text-cream sm:text-4xl md:text-5xl">
+              Ваш первый идеальный торт может случиться уже на этой неделе
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base text-cream/70 sm:text-lg">
+              500+ учениц уже пекут иначе. Присоединяйтесь, пока действует цена запуска.
+            </p>
+
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <Button size="lg" onClick={() => openCheckout("standard")}>
+                Начать печь красиво →
+              </Button>
+              <Countdown className="opacity-90" />
+            </div>
+          </div>
+        </Reveal>
       </Container>
     </section>
   );

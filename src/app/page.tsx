@@ -1,35 +1,41 @@
 import { Header } from "@/components/sections/Header";
 import { Hero } from "@/components/sections/Hero";
-import { Problem } from "@/components/sections/Problem";
-import { Author } from "@/components/sections/Author";
+import { SocialProofBar } from "@/components/sections/SocialProofBar";
+import { Offer } from "@/components/sections/Offer";
+import { Benefits } from "@/components/sections/Benefits";
 import { Program } from "@/components/sections/Program";
-import { Deliverables } from "@/components/sections/Deliverables";
+import { WhatsIncluded } from "@/components/sections/WhatsIncluded";
+import { Author } from "@/components/sections/Author";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Pricing } from "@/components/sections/Pricing";
+import { Guarantee } from "@/components/sections/Guarantee";
 import { FAQ } from "@/components/sections/FAQ";
 import { FinalCTA } from "@/components/sections/FinalCTA";
 import { Footer } from "@/components/sections/Footer";
+import { StickyCTA } from "@/components/sections/StickyCTA";
 import { CookieConsent } from "@/components/ui/CookieConsent";
-import { StickyMobileCTA } from "@/components/ui/StickyMobileCTA";
 
 export default function Home() {
   return (
     <>
       <Header />
-      <main id="main-content" className="pb-20 sm:pb-0">
+      <main id="main-content" className="pb-20 lg:pb-0">
         <Hero />
-        <Problem />
-        <Author />
+        <SocialProofBar />
+        <Offer />
+        <Benefits />
         <Program />
-        <Deliverables />
+        <WhatsIncluded />
+        <Author />
         <Testimonials />
         <Pricing />
+        <Guarantee />
         <FAQ />
         <FinalCTA />
       </main>
       <Footer />
+      <StickyCTA />
       <CookieConsent />
-      <StickyMobileCTA />
     </>
   );
 }

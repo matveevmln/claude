@@ -21,7 +21,7 @@ home kitchen setting, editorial food photography, no text, no watermark,
 
 ## Слоты и промпты
 
-### `hero-cake`
+### `hero-main`
 Готовый многоярусный торт крупным планом на кухонном столе, за ним слегка
 размытая кухня. Женские руки в кадре (не лицо) поправляют последний
 цветок из крема.
@@ -37,12 +37,14 @@ kitchen background, [base suffix]
 Это должно быть настоящее фото автора — AI-генерация здесь не подходит,
 только реальная фотосъёмка.
 
-### `program-overview`
-Коллаж/сетка из 4-6 кадров процесса: замес теста, выравнивание бисквита,
-работа кондитерским мешком, готовый десерт. Единый цветовой грейд.
+### `module-01-biscuit` … `module-08-business`
+Восемь кадров — по одному на модуль программы (см. `modules` в
+`src/lib/content/product.ts`), показанных в блоке «Программа» рядом с
+открытым модулем аккордеона. Каждый — кадр процесса, соответствующий теме
+модуля (бисквиты, кремы, начинки/ганаши, сборка и выравнивание,
+украшение, капкейки/пирожные, чизкейки, торты на заказ).
 ```
-grid collage of baking process shots: whisking batter, leveling sponge
-cake, piping buttercream flowers, finished dessert plating,
+close-up baking process shot matching the module topic, editorial style,
 [base suffix]
 ```
 
@@ -75,5 +77,6 @@ person, illustrative" в metadata.
 - [ ] Все 6 портретов учениц отсняты/сгенерированы
 - [ ] Портрет автора — реальное фото
 - [ ] Hero-фото торта в высоком разрешении (минимум 1600×2000)
+- [ ] Все 8 фото модулей программы (`module-01-biscuit` … `module-08-business`)
 - [ ] Единый цветокоррекция по всем фото (Lightroom-пресет или аналог)
 - [ ] Логотип в векторе (SVG) для будущей замены emoji-иконки

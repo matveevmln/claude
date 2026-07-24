@@ -1,7 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { tariffs } from "@/lib/content/product";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { tariffs, type Tariff } from "@/lib/content/product";
+import { Button } from "./Button";
+import { track } from "@/lib/analytics";
 
 function getUtm(): Record<string, string> {
   if (typeof window === "undefined") return {};
@@ -33,14 +36,43 @@ function getAffiliateCode(): string | undefined {
   return undefined;
 }
 
-export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose: () => void }) {
-  const tariff = tariffs.find((t) => t.id === tariffId);
+const upgradePath: Partial<Record<Tariff["id"], Tariff["id"]>> = {
+  basic: "standard",
+  standard: "vip",
+};
+
+export function PaymentModal({
+  tariffId,
+  onClose,
+}: {
+  tariffId: Tariff["id"] | null;
+  onClose: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {tariffId && <CheckoutSheet key={tariffId} initialTariffId={tariffId} onClose={onClose} />}
+    </AnimatePresence>
+  );
+}
+
+function CheckoutSheet({
+  initialTariffId,
+  onClose,
+}: {
+  initialTariffId: Tariff["id"];
+  onClose: () => void;
+}) {
+  const [selectedId, setSelectedId] = useState<Tariff["id"]>(initialTariffId);
+  const tariff = tariffs.find((t) => t.id === selectedId) ?? tariffs[0];
+  const nextTariff = tariffs.find((t) => t.id === upgradePath[tariff.id]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
   const [couponCode, setCouponCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Auto-apply a coupon shared via a landing-page link, e.g. /?coupon=SUMMER20
@@ -49,23 +81,23 @@ export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose:
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCouponCode(fromUrl.toUpperCase());
     }
+    track("InitiateCheckout", { tariff: tariff.id, value: tariff.price });
+    nameInputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    function onKeydown(e: KeyboardEvent) {
+    function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", onKeydown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKeydown);
-      document.body.style.overflow = "";
-    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    if (!tariff) return;
+    setStatus("loading");
     setError("");
 
     try {
@@ -73,7 +105,7 @@ export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tariffId,
+          tariffId: tariff.id,
           name,
           email,
           telegramUsername: telegramUsername || undefined,
@@ -83,99 +115,140 @@ export function PaymentModal({ tariffId, onClose }: { tariffId: string; onClose:
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Не удалось создать заказ");
-        setLoading(false);
-        return;
-      }
+
+      if (!res.ok) throw new Error(data.error ?? "Не удалось создать оплату");
+
+      track("Lead", { tariff: tariff.id, value: tariff.price });
       window.location.href = data.paymentUrl;
-    } catch {
-      setError("Ошибка сети. Попробуйте ещё раз.");
-      setLoading(false);
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Что-то пошло не так, попробуйте ещё раз");
     }
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="payment-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-choco/50 px-4 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-choco/55 backdrop-blur-sm sm:items-center sm:p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
     >
-      <div className="w-full max-w-sm rounded-[2rem] border border-beige-line bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-3">
-          <h2 id="payment-modal-title" className="font-display text-lg font-bold text-choco">
-            Оформление тарифа «{tariff?.name}»
-          </h2>
-          <button onClick={onClose} aria-label="Закрыть" className="text-2xl text-choco-soft hover:text-berry-deep">
-            ×
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-heading"
+        className="w-full max-w-md rounded-t-[2rem] border border-blush-deep/40 bg-cream p-6 shadow-2xl sm:rounded-[2rem] sm:p-8"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
+        transition={{ type: "spring", damping: 26, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-start justify-between">
+          <div>
+            <p id="checkout-heading" className="text-xs font-bold uppercase tracking-wide text-berry">
+              Тариф «{tariff.name}»
+            </p>
+            <p className="font-display text-2xl font-extrabold text-choco">
+              {tariff.price.toLocaleString("ru-RU")} ₽
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Закрыть окно оплаты"
+            className="rounded-full p-2 text-choco-soft hover:bg-beige focus-visible:ring-2 focus-visible:ring-berry"
+          >
+            ✕
           </button>
         </div>
-        {tariff && (
-          <p className="mt-1 font-display text-2xl font-extrabold text-choco">
-            {tariff.price.toLocaleString("ru-RU")} ₽
-          </p>
+
+        {nextTariff && (
+          <button
+            type="button"
+            onClick={() => setSelectedId(nextTariff.id)}
+            className="mb-5 w-full rounded-2xl border border-gold-light/60 bg-gradient-to-r from-gold-light/20 to-blush/40 p-4 text-left transition hover:border-gold"
+          >
+            <p className="text-xs font-bold text-gold-deep">
+              ✨ Улучшить за разницу в {(nextTariff.price - tariff.price).toLocaleString("ru-RU")} ₽
+            </p>
+            <p className="mt-1 text-sm font-semibold text-choco">
+              Перейти на «{nextTariff.name}» — {nextTariff.price.toLocaleString("ru-RU")} ₽
+            </p>
+            <p className="mt-0.5 text-xs text-choco-soft">{nextTariff.features[1]}</p>
+          </button>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-choco-soft">Имя</span>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <Field label="Ваше имя">
             <input
+              ref={nameInputRef}
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="Как к вам обращаться"
+              autoComplete="name"
               className="w-full rounded-xl border border-beige-line bg-white px-4 py-3 text-sm outline-none focus:border-berry"
             />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-choco-soft">Email</span>
+          </Field>
+          <Field label="Email — куда придёт доступ">
             <input
               required
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
               className="w-full rounded-xl border border-beige-line bg-white px-4 py-3 text-sm outline-none focus:border-berry"
             />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-choco-soft">Telegram (необязательно)</span>
+          </Field>
+          <Field label="Telegram (необязательно)">
             <input
               value={telegramUsername}
               onChange={(e) => setTelegramUsername(e.target.value)}
               placeholder="@username"
               className="w-full rounded-xl border border-beige-line bg-white px-4 py-3 text-sm outline-none focus:border-berry"
             />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-choco-soft">Промокод (если есть)</span>
+          </Field>
+          <Field label="Промокод (если есть)">
             <input
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value)}
               className="w-full rounded-xl border border-beige-line bg-white px-4 py-3 text-sm outline-none focus:border-berry"
             />
-          </label>
+          </Field>
 
-          {error && (
+          {status === "error" && (
             <p role="alert" className="text-sm font-medium text-berry-deep">
               {error}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-berry-deep to-berry-strong px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:opacity-60"
-          >
-            {loading ? "Переходим к оплате…" : "Перейти к оплате"}
-          </button>
-          <p className="text-center text-[11px] text-choco-soft">
-            🔒 Безопасная оплата · Гарантия возврата 14 дней
+          <Button type="submit" size="lg" className="mt-2 w-full" disabled={status === "loading"}>
+            {status === "loading" ? "Переходим к оплате…" : "Перейти к оплате"}
+          </Button>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-choco-soft/70">
+            <span>🔒 Безопасный платёж</span>
+            <span aria-hidden>·</span>
+            <span>💳 Visa · Mastercard · МИР</span>
+            <span aria-hidden>·</span>
+            <span>↩️ Возврат за 14 дней</span>
+          </div>
+          <p className="text-center text-xs text-choco-soft/70">
+            Доступ придёт автоматически на почту и в Telegram в течение 1–2 минут.
           </p>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-choco-soft">{label}</span>
+      {children}
+    </label>
   );
 }

@@ -1,24 +1,20 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
-import { PaymentModal } from "@/components/ui/PaymentModal";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { MotionConfig } from "framer-motion";
+import type { Tariff } from "@/lib/content/product";
+import { PaymentModal } from "./ui/PaymentModal";
 
-type CheckoutContextValue = {
-  openCheckout: (tariffId: string) => void;
-};
-
-const CheckoutContext = createContext<CheckoutContextValue | null>(null);
+const CheckoutContext = createContext<(tariffId: Tariff["id"]) => void>(() => {});
 
 export function useCheckout() {
-  const ctx = useContext(CheckoutContext);
-  if (!ctx) throw new Error("useCheckout must be used within CheckoutProvider");
-  return ctx;
+  return useContext(CheckoutContext);
 }
 
 const REF_STORAGE_KEY = "dd_ref_code";
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const [tariffId, setTariffId] = useState<string | null>(null);
+  const [tariffId, setTariffId] = useState<Tariff["id"] | null>(null);
 
   // First-touch affiliate attribution: persist ?ref=CODE beyond the landing
   // page visit, so the code still applies if checkout happens later in the
@@ -30,13 +26,12 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const openCheckout = useCallback((id: string) => setTariffId(id), []);
-  const close = useCallback(() => setTariffId(null), []);
-
   return (
-    <CheckoutContext.Provider value={{ openCheckout }}>
-      {children}
-      {tariffId && <PaymentModal tariffId={tariffId} onClose={close} />}
-    </CheckoutContext.Provider>
+    <MotionConfig reducedMotion="user">
+      <CheckoutContext.Provider value={setTariffId}>
+        {children}
+        <PaymentModal tariffId={tariffId} onClose={() => setTariffId(null)} />
+      </CheckoutContext.Provider>
+    </MotionConfig>
   );
 }
