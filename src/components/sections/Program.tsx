@@ -48,7 +48,7 @@ export function Program() {
                       </span>
                       <motion.span
                         animate={{ rotate: isOpen ? 45 : 0 }}
-                        className="shrink-0 text-xl text-berry"
+                        className="shrink-0 text-xl text-berry-deep"
                         aria-hidden
                       >
                         +

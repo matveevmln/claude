@@ -33,7 +33,7 @@ export function Offer() {
               <ul className="mt-5 flex flex-col gap-4">
                 {pains.map((p) => (
                   <li key={p} className="flex gap-3 text-sm text-choco-soft sm:text-base">
-                    <span className="mt-0.5 text-choco-soft/60">✕</span>
+                    <span className="mt-0.5 text-choco-soft">✕</span>
                     <span>{p}</span>
                   </li>
                 ))}
@@ -47,7 +47,7 @@ export function Offer() {
               <ul className="mt-5 flex flex-col gap-4">
                 {promises.map((p) => (
                   <li key={p} className="flex gap-3 text-sm text-choco-soft sm:text-base">
-                    <span className="mt-0.5 text-berry">✓</span>
+                    <span className="mt-0.5 text-berry-deep">✓</span>
                     <span>{p}</span>
                   </li>
                 ))}

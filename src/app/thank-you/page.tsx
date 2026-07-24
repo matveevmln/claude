@@ -34,7 +34,7 @@ function ThankYouContent() {
   }, [orderId]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-cream px-5 text-center">
+    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center gap-4 bg-cream px-5 text-center">
       {status === "pending" && (
         <>
           <p className="text-4xl" aria-hidden>⏳</p>
@@ -69,7 +69,7 @@ function ThankYouContent() {
           </Link>
         </>
       )}
-    </div>
+    </main>
   );
 }
 

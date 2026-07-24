@@ -36,7 +36,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
+    <main id="main-content" className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
       <div className="w-full max-w-sm rounded-[2rem] border border-beige-line bg-white/70 p-8 shadow-xl">
         <div className="mb-6 text-center">
           <p className="font-display text-lg font-bold text-choco">{site.brand}</p>
@@ -75,7 +75,7 @@ function ResetPasswordForm() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

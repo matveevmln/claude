@@ -156,7 +156,7 @@ function CheckoutSheet({
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <p id="checkout-heading" className="text-xs font-bold uppercase tracking-wide text-berry">
+            <p id="checkout-heading" className="text-xs font-bold uppercase tracking-wide text-berry-deep">
               Тариф «{tariff.name}»
             </p>
             <p className="font-display text-2xl font-extrabold text-choco">
@@ -237,14 +237,14 @@ function CheckoutSheet({
             {status === "loading" ? "Переходим к оплате…" : "Перейти к оплате"}
           </Button>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-choco-soft/70">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-choco-soft">
             <span>🔒 Безопасный платёж</span>
             <span aria-hidden>·</span>
             <span>💳 Visa · Mastercard · МИР</span>
             <span aria-hidden>·</span>
             <span>↩️ Возврат за 14 дней</span>
           </div>
-          <p className="text-center text-xs text-choco-soft/70">
+          <p className="text-center text-xs text-choco-soft">
             Доступ придёт автоматически на почту и в Telegram в течение 1–2 минут.
           </p>
         </form>

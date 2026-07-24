@@ -29,7 +29,7 @@ export function CertificateCard() {
           rel="noopener noreferrer"
           className="mt-4 inline-flex rounded-full bg-gradient-to-r from-berry-deep to-berry-strong px-6 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5"
         >
-          Открыть сертификат →
+          Открыть сертификат →
         </a>
       ) : (
         <button

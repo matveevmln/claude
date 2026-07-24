@@ -26,7 +26,7 @@ export function FinalCTA() {
 
             <div className="mt-8 flex flex-col items-center gap-4">
               <Button size="lg" onClick={() => openCheckout("standard")}>
-                Начать печь красиво →
+                Начать печь красиво →
               </Button>
               <Countdown className="opacity-90" />
             </div>

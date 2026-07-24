@@ -24,7 +24,7 @@ export default async function CertificatePage({ params }: PageProps<"/certificat
         <p className="mt-6 text-xs text-choco-soft">
           Дата выдачи: {certificate.issuedAt.toLocaleDateString("ru-RU")}
         </p>
-        <p className="mt-1 text-xs text-choco-soft/70">Серийный номер: {certificate.serial}</p>
+        <p className="mt-1 text-xs text-choco-soft">Серийный номер: {certificate.serial}</p>
         <div className="mt-8 border-t border-beige-line pt-4">
           <p className="text-xs text-choco-soft">{site.brand} · {site.domain}</p>
         </div>

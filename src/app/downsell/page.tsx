@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function DownsellPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
+    <main id="main-content" className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
       <div className="w-full max-w-lg rounded-[2.5rem] border border-beige-line bg-white p-8 text-center shadow-xl sm:p-10">
         <h1 className="font-display text-2xl font-bold text-choco sm:text-3xl">Не готовы к полному курсу?</h1>
         <p className="mt-3 text-sm text-choco-soft">
@@ -20,6 +20,6 @@ export default function DownsellPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

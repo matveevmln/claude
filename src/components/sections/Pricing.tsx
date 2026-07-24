@@ -59,7 +59,7 @@ export function Pricing() {
                   <span className="font-display text-3xl font-extrabold text-choco">
                     {t.price.toLocaleString("ru-RU")} ₽
                   </span>
-                  <span className="text-sm text-choco-soft/60 line-through">
+                  <span className="text-sm text-choco-soft line-through">
                     {t.oldPrice.toLocaleString("ru-RU")} ₽
                   </span>
                 </div>
@@ -67,7 +67,7 @@ export function Pricing() {
                   <span className="rounded-full bg-blush/70 px-2.5 py-0.5 text-[11px] font-bold text-berry-deep">
                     Экономия {(t.oldPrice - t.price).toLocaleString("ru-RU")} ₽
                   </span>
-                  <span className="text-[11px] text-choco-soft/70">
+                  <span className="text-[11px] text-choco-soft">
                     ≈ {Math.round(t.price / 40).toLocaleString("ru-RU")} ₽ за урок
                   </span>
                 </div>
@@ -80,7 +80,7 @@ export function Pricing() {
                 <ul className="mt-6 flex flex-1 flex-col gap-3">
                   {t.features.map((f) => (
                     <li key={f} className="flex gap-2 text-sm text-choco-soft">
-                      <span className="mt-0.5 shrink-0 text-berry">✓</span>
+                      <span className="mt-0.5 shrink-0 text-berry-deep">✓</span>
                       {f}
                     </li>
                   ))}
@@ -94,7 +94,7 @@ export function Pricing() {
                 >
                   Выбрать «{t.name}»
                 </Button>
-                <p className="mt-3 text-center text-[11px] text-choco-soft/60">
+                <p className="mt-3 text-center text-[11px] text-choco-soft">
                   🔒 Безопасная оплата · Гарантия 14 дней
                 </p>
               </div>

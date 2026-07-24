@@ -67,7 +67,7 @@ export function VideoPlayer({
       <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/80 text-2xl text-berry-deep shadow-lg">
         ▶
       </span>
-      <p className="relative max-w-xs text-center text-xs text-choco-soft/70">
+      <p className="relative max-w-xs text-center text-xs text-choco-soft">
         Видео появится здесь после загрузки съёмочных материалов
       </p>
     </div>

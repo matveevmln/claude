@@ -32,7 +32,7 @@ export function PhotoSlot({
       <div aria-hidden className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-berry/45">
         <SeededGlyph seed={slotId} className="h-12 w-12" />
         {label && (
-          <span className="max-w-[70%] text-center text-xs font-medium tracking-wide text-choco-soft/60">
+          <span className="max-w-[70%] text-center text-xs font-medium tracking-wide text-choco-soft">
             {label}
           </span>
         )}

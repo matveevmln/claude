@@ -87,7 +87,7 @@ export default async function DashboardPage() {
               <li key={a.id} className="border-b border-beige-line pb-3 text-sm last:border-0 last:pb-0">
                 <p className="font-semibold text-choco">{a.title}</p>
                 <p className="text-choco-soft">{a.body}</p>
-                <p className="mt-1 text-xs text-choco-soft/70">{a.publishedAt.toLocaleDateString("ru-RU")}</p>
+                <p className="mt-1 text-xs text-choco-soft">{a.publishedAt.toLocaleDateString("ru-RU")}</p>
               </li>
             ))}
           </ul>

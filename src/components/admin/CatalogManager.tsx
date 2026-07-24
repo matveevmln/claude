@@ -173,7 +173,7 @@ function TariffRow({
       >
         Сохранить
       </button>
-      <span className="text-xs text-choco-soft/70">/{tariff.slug}</span>
+      <span className="text-xs text-choco-soft">/{tariff.slug}</span>
     </div>
   );
 }

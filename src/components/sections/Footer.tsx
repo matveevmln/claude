@@ -4,7 +4,7 @@ import { site } from "@/config/site";
 export function Footer() {
   return (
     <footer className="border-t border-beige-line/60 py-10">
-      <Container className="flex flex-col items-center gap-4 text-center text-xs text-choco-soft/70 sm:flex-row sm:justify-between sm:text-left">
+      <Container className="flex flex-col items-center gap-4 text-center text-xs text-choco-soft sm:flex-row sm:justify-between sm:text-left">
         <p>
           © {new Date().getFullYear()} {site.brand}. Все права защищены.
         </p>

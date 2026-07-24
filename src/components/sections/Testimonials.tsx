@@ -29,7 +29,7 @@ export function Testimonials() {
                   <p className="mt-auto rounded-xl bg-blush/60 px-3 py-2 text-xs font-semibold text-berry-deep">
                     {t.result}
                   </p>
-                  <p className="text-xs text-choco-soft/70">
+                  <p className="text-xs text-choco-soft">
                     {t.name}, {t.age} лет · {t.city}
                   </p>
                 </div>

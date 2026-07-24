@@ -3,7 +3,7 @@ import { site } from "@/config/site";
 
 export default function UpsellPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
+    <main id="main-content" className="flex min-h-screen items-center justify-center bg-cream px-5 py-16">
       <div className="w-full max-w-lg rounded-[2.5rem] border border-blush-deep/50 bg-white p-8 text-center shadow-xl sm:p-10">
         <span className="inline-flex rounded-full bg-blush px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-berry-deep">
           Специально для вас
@@ -27,6 +27,6 @@ export default function UpsellPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -145,7 +145,7 @@ function ModuleCard({
                 href="/account/upgrade"
                 className="mt-2 inline-flex text-xs font-bold text-gold-deep underline"
               >
-                Посмотреть варианты апгрейда →
+                Посмотреть варианты апгрейда →
               </Link>
             </div>
           ) : (

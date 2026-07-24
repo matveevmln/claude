@@ -56,7 +56,7 @@ export default async function LessonPage({ params }: PageProps<"/account/course/
           </a>
         )}
       </div>
-      <p className="text-xs text-choco-soft/70">
+      <p className="text-xs text-choco-soft">
         Клавиши: ← / → — соседний урок, C — отметить как пройденный
       </p>
 

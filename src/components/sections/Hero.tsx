@@ -48,7 +48,7 @@ export function Hero() {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button size="lg" onClick={() => openCheckout("standard")}>
-              Начать печь красиво →
+              Начать печь красиво →
             </Button>
             <div className="flex items-center gap-3 rounded-2xl border border-blush-deep/50 bg-white/60 px-4 py-2.5">
               <span className="text-xs font-medium text-choco-soft">Цена запуска ещё активна:</span>
@@ -56,7 +56,7 @@ export function Hero() {
             </div>
           </div>
 
-          <p className="text-xs text-choco-soft/70">
+          <p className="text-xs text-choco-soft">
             Оплата картой · доступ навсегда · гарантия возврата 14 дней
           </p>
         </motion.div>

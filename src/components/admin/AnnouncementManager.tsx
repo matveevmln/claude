@@ -66,7 +66,7 @@ export function AnnouncementManager({ announcements }: { announcements: Announce
             <div>
               <p className="font-semibold text-choco">{a.title}</p>
               <p className="text-sm text-choco-soft">{a.body}</p>
-              <p className="mt-1 text-xs text-choco-soft/70">{new Date(a.publishedAt).toLocaleDateString("ru-RU")}</p>
+              <p className="mt-1 text-xs text-choco-soft">{new Date(a.publishedAt).toLocaleDateString("ru-RU")}</p>
             </div>
             <button onClick={() => remove(a.id)} className="shrink-0 text-xs text-choco-soft hover:text-berry-deep">
               Удалить

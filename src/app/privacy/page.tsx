@@ -5,7 +5,7 @@ export const metadata = { title: "Политика конфиденциальн�
 
 export default function PrivacyPage() {
   return (
-    <div className="bg-cream py-16">
+    <main id="main-content" className="bg-cream py-16">
       <Container className="max-w-3xl">
         <h1 className="font-display text-2xl font-bold text-choco sm:text-3xl">Политика конфиденциальности</h1>
         <div className="mt-6 flex flex-col gap-4 text-sm leading-relaxed text-choco-soft">
@@ -33,6 +33,6 @@ export default function PrivacyPage() {
           </p>
         </div>
       </Container>
-    </div>
+    </main>
   );
 }
